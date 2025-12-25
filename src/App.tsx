@@ -9,33 +9,64 @@ import {
 import songs from "./songs.json";
 import quotes from "./f1quotes.json";
 import SettingsPage, { type ExpectedSettings } from "./components/SettingsPage";
+import UseLocalStorage from "./hooks/useLocalStorage";
 
 export default function App() {
-  const [campfireMute, setCampfireMute] = useState(true);
-
   const [showGui, setShowGui] = useState(true);
 
   // songs
-  const [musicMute, setMusicMute] = useState(true);
   const [currentSongIndex, setCurrentSongIndex] = useState(
     Math.floor(Math.random() * songs.length)
   );
   const currentSong = songs[currentSongIndex];
   const [currentSongTime, setCurrentSongTime] = useState("0:00");
 
-  const [playQuotes, setPlayQuotes] = useState(true);
   const [quoteIndex, setQuoteIndex] = useState(0);
   const currentQuote = quotes[quoteIndex];
 
   const [userInteracted, setUserInteracted] = useState(false);
   const quoteAudioRef = useRef<HTMLAudioElement>(null);
+  const songAudioRef = useRef<HTMLAudioElement>(null);
+  const campfireAudioRef = useRef<HTMLVideoElement>(null);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // audio levels
-  const [campfireLevel, setCampfireLevel] = useState(50);
-  const [musicLevel, setMusicLevel] = useState(50);
-  const [quotesLevel, setQuotesLevel] = useState(50);
+  // playQuotes, musicMute and campfireMute cant use localstorage because browser autoplay policies yadayada
+  const [campfireLevel, setCampfireLevel] = UseLocalStorage<number>(
+    "campfireLevel",
+    50
+  );
+  const [musicLevel, setMusicLevel] = UseLocalStorage<number>("musicLevel", 50);
+  const [quotesLevel, setQuotesLevel] = UseLocalStorage<number>(
+    "quotesLevel",
+    50
+  );
+
+  const [musicMute, setMusicMute] = useState(true);
+  const [playQuotes, setPlayQuotes] = useState(true);
+  const [campfireMute, setCampfireMute] = useState(true);
+
+  // video selected by user
+  const availableVideos = [
+    {
+      name: "Fireplace",
+      file: "fireplace.mp4",
+    },
+    {
+      name: "Fireplace 2",
+      file: "fireplace2.mp4",
+    },
+    {
+      name: "None",
+      file: "thisfiledoesnotexist.txt",
+    }
+  ];
+  const [selectedVideo, setSelectedVideo] = UseLocalStorage<string>(
+    "selectedVideo",
+    availableVideos[0].file
+  );
+  const currentVideo = selectedVideo;
 
   // gui auto-hide logic
   useEffect(() => {
@@ -112,27 +143,45 @@ export default function App() {
     return () => clearTimeout(timeout);
   }, [quoteIndex, playQuotes, userInteracted]);
 
+  // song volume update
+  useEffect(() => {
+    if (songAudioRef.current) {
+      songAudioRef.current.volume = musicLevel / 100;
+    }
+  }, [musicLevel]);
+
+  // campfire volume update
+  useEffect(() => {
+    if (campfireAudioRef.current) {
+      campfireAudioRef.current.volume = campfireLevel / 100;
+    }
+  }, [campfireLevel]);
+
   return (
     <>
       {settingsOpen && (
         <SettingsPage
           onClose={() => setSettingsOpen(false)}
-          onSave={(settings: ExpectedSettings) => {
-            setCampfireMute(settings.campfireMute);
-            setMusicMute(settings.musicMute);
-            setPlayQuotes(settings.playQuotes);
-            setCampfireLevel(settings.campfireLevel);
-            setMusicLevel(settings.musicLevel);
-            setQuotesLevel(settings.quotesLevel);
+          setters={{
+            setCampfireMute,
+            setMusicMute,
+            setPlayQuotes,
+            setCampfireLevel,
+            setMusicLevel,
+            setQuotesLevel,
+            setSelectedVideo,
           }}
-          settings={{
-            campfireMute,
-            musicMute,
-            playQuotes,
-            campfireLevel,
-            musicLevel,
-            quotesLevel,
-          }}
+          settings={
+            {
+              campfireMute,
+              musicMute,
+              playQuotes,
+              campfireLevel,
+              musicLevel,
+              quotesLevel,
+              selectedVideo,
+            } as ExpectedSettings
+          }
         />
       )}
       <div
@@ -143,6 +192,7 @@ export default function App() {
       >
         {/* song player */}
         <audio
+          ref={songAudioRef}
           src={currentSong.url}
           autoPlay
           loop
@@ -174,11 +224,12 @@ export default function App() {
 
         {/* campfire video nd audio */}
         <video
+          ref={campfireAudioRef}
           className="fixed inset-0 w-full h-full object-cover z-0"
           autoPlay
           loop
           muted={campfireMute}
-          src="/fireplace.mp4"
+          src={`/videos/${currentVideo}`}
           controls={false}
           disablePictureInPicture
           controlsList="nodownload nofullscreen noremoteplayback nopictureinpicture"
