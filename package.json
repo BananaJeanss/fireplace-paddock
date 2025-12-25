@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "gen-playlist": "node scripts/generate-playlist.mjs",
+    "gen-playlist": "node scripts/generate-playlist.mjs && node scripts/generate-f1quotes.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
