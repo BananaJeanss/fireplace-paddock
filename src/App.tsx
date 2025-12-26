@@ -4,6 +4,7 @@ import {
   Fullscreen,
   Music,
   Settings,
+  SkipForward,
   VolumeOff,
 } from "lucide-react";
 import songs from "./songs.json";
@@ -318,6 +319,12 @@ export default function App() {
                     }${Math.round(currentSong.duration % 60)}`}
                   </p>
                 </div>
+                <SkipForward
+                  className="text-white cursor-pointer"
+                  onClick={() => {
+                    setCurrentSongIndex((currentSongIndex + 1) % songs.length);
+                  }}
+                />
                 {/* sesttings button */}
                 <div className="flex flex-row w-full justify-end flex-1">
                   <Settings
