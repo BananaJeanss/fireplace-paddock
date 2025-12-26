@@ -47,6 +47,41 @@ export default function App() {
   const [playQuotes, setPlayQuotes] = useState(true);
   const [campfireMute, setCampfireMute] = useState(true);
 
+  // mediaSession metadata
+  useEffect(() => {
+    if ("mediaSession" in navigator) {
+      const artwork = [];
+      if (currentSong.cover) {
+        // extract mime type from base64 string
+        // data:image/jpeg;base64,...
+        const mimeType = currentSong.cover.split(";")[0].split(":")[1];
+        artwork.push({
+          src: currentSong.cover,
+          sizes: "512x512",
+          type: mimeType,
+        });
+      } else {
+        artwork.push({
+          src: "/icons/android-chrome-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+        });
+        artwork.push({
+          src: "/icons/android-chrome-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+        });
+      }
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentSong.title,
+        artist: currentSong.artist,
+        album: currentSong.album || "Fireplace Paddock",
+        artwork: artwork,
+      });
+    }
+  }, [currentSong]);
+
   // video selected by user
   const availableVideos = [
     {
@@ -60,7 +95,7 @@ export default function App() {
     {
       name: "None",
       file: "thisfiledoesnotexist.txt",
-    }
+    },
   ];
   const [selectedVideo, setSelectedVideo] = UseLocalStorage<string>(
     "selectedVideo",

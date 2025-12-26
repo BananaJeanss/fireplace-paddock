@@ -35,24 +35,6 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,json,webmanifest}"],
-        runtimeCaching: [
-          {
-            urlPattern: ({ request }) =>
-              request.destination === "video" ||
-              request.destination === "audio",
-            handler: "CacheFirst",
-            options: {
-              cacheName: "media-cache",
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-        ],
       },
       devOptions: {
         enabled: true,
