@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "gen-playlist": "node scripts/generate-playlist.mjs && node scripts/generate-f1quotes.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -32,7 +32,9 @@
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "npm:rolldown-vite@7.2.5"
+    "vite": "npm:rolldown-vite@7.2.5",
+    "vite-plugin-mkcert": "^1.17.9",
+    "vite-plugin-pwa": "^1.2.0"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"
